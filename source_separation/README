@@ -1,0 +1,81 @@
+提交根目录结构如下：
+
+./
+├── code
+│   ├── CAM
+│   └── preprocess
+├── dataset
+├── json
+├── module
+│   └── single_task
+├── MUSIC_dataset-master
+├── npz_data
+├── separated_audio
+│   ├── test_25
+│   └── test_7
+├── single_task
+├── tensorboardX
+│   ├── audio_net
+│   └── video_net
+├── test_diff_img
+│   ├── diff
+│   └── same
+├── test_result
+├── testset25
+│   └── gt_sep_audio
+└── testset7
+
+
+一、运行环境：
+1)操作系统：CentOS Linux 7
+2)GPU型号: Tesla P100
+3)主要代码库版本：
+CUDA 9.0
+python 3.5 (python3.6版本出现过逆STFT变换结果恒为零的问题，后改为python3.5解决)
+numpy 1.15.2
+scipy 1.1.0
+scikit-learn 0.20.0
+torch 0.4.1
+torchvision 0.2.1
+tensorboradX 1.5
+librosa 0.6.2
+ffmpeg 1.4
+audioread 2.1.6
+matplotlib 3.0.2
+Pillow 5.3.0
+opencv-python-headless 3.4.5.20
+mir-eval 0.5
+
+二、目录结构及功能说明：(***表示需要助教将数据放入此目录以保证代码正常运行）
+
+./code/ 所有代码。
+./code/README 所有代码的相关说明。
+./code/preprocess/ 进行预处理部分的代码。./code/preprocess/README 预处理部分代码的说明。
+
+***./dataset/ 训练集，空目录。运行训练部分需要将助教提供的训练集放置在该文件夹下(dataset内部目录要保持不变）。
+
+***./testset25/ 人工合成测试集。测试时需要将助教提供的测试集testset25放置在该文件夹下(testset25内部目录要保持不变）。另外最初没有提供groundtruth，为了测试sdr需要助教将groundtruth的全部音频放置在子目录./testset25/gt_sep_audio/目录下。
+
+***./testset7/ 自然条件数据集测试时需要将助教提供的测试集testset25放置在该文件夹下(testset7内部目录要保持不变)。
+
+./MUSIC_dataset-master/ 空目录。验证集数据。如需进行validation需要从网盘下载数据。否则可忽略此目录。
+
+***./module/ 训练好的模型，空目录。请助教将网盘上下载的模型audio.t7, video.t7, Synthesizer.t7放置于该目录下。子目录./module/single_task/需要助教下载网盘相关模型放入该目录。
+
+./separated_audio/ 分离的音频。子目录./separated_audio/test_25/ 输出人工合成数据集的分离音频。已经将我们运行的结果放置于此。助教可以重新运行python ./code/test_script.py 得到新的结果。子目录./separated_audio/test_7/ 输出自然环境数据集的分离音频。运行python ./code/test_7.py可以生成分离的音频。
+
+./npz_data/ 空目录，所有.npz格式的数据。网盘上提供的.npz数据下载后均需要放置在该目录下。
+
+./json/ 运行代码的定位结果会输出在该目录下。
+
+./single_task/ 测试网络在简单任务下的效果。
+
+./test_diff_img/ 测试输入不同图片对分离效果的影响。
+
+./test_result/ 在测试集上部分片段的输出。
+
+./tensorboardX/ 网络模型可视化结果。可以在报告根目录下运行\textit{tensorboard --logdir tensorboardX/video-net}查看Video-Net网络可视化模型，运行\textit{tensorboard --logdir tensorboardX/audio-net}查看Audio-Net网络可视化模型。
+
+./show_mask.ipynb 将mask进行可视化的代码，可以运行查看。
+
+	

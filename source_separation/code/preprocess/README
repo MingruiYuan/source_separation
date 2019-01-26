@@ -1,0 +1,49 @@
+##数据预处理说明##
+
+1.文件：
+SPLdataset.py 数据预处理类SPLdataset实现，用于进行训练集与测试集的预处理
+STFT.py 短时傅里叶变换与逆变换
+presvld.py 将读取的数据存为npz文件待使用
+testDataset.py 运行脚本
+
+2.运行：
+有两种运行模式，原始数据读取与存储npz文件读取。
+
+
+1) 原始数据读取：
+①设置训练参数：调整testDataset.py的参数。
+Line16,17表示进行训练的乐器种类，如需对所有乐器进行训练只需将ins1与ins2改为[0,1,2,3,4,5,6,7].
+Line19 epoch为取数据的轮次。
+②终端输入 $ python testDataset.py
+
+2) 存储npz文件读取：
+运行方法与1)相同。
+此方法目的是提高效率，先通过原始数据读取的方式生成npz文件，在正式训练时直接读取npz文件即可得到所需数据。如果希望获得新的数据，生成新的npz文件即可。
+存储npz命名为i.npz,每个epoch为1个文件。放置于/npz_data/
+
+3.预处理方法：
+
+step 1 获得需要的乐器组合：SPLdataset.py combination_sequence(in1, in2):
+根据输入的乐器编号，获取这些编号任意两种乐器的组合。且通过随机调换顺序将不同乐器随机送入左右两个网络。
+
+step 2 获取音频： SPLdataset.py get_audio():
+读取数据后先进行重采样，使用的是scipy.ndimage的zoom函数；
+需要获得512*256的线性频谱，使用librosa.stft(center=True)，需要65280点的片段,据此将音频切分。同时发现部分视频开头结尾无演奏内容，因此去除第一段和最后一段；
+将获得两种乐器单独的频谱与混合频谱。相位返回。
+
+其中STFT部分需要转换为对数频谱，因此根据mel frequency计算抽取的频点。反变换时通过插值获得线性频谱。
+
+step 3 获取图片序列： SPLdataset.py get_image():
+使用resnet18为基础的网络进行训练，因此按照要求进行预处理：
+normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+normalize = transforms.Compose(
+[transforms.Resize(256),
+ transforms.CenterCrop(224),
+ transforms.ToTensor(),
+ transforms.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225])
+])
+
+step 4 随机交换数据顺序
+将某个epoch全部数据读取后，将第一维数据进行随机打乱顺序，这样可以保证不同组合以随机的顺序送入网络。
+
+ 

@@ -1,0 +1,43 @@
+##代码说明##
+（***表示可以用python 命令直接运行的脚本）
+myNet.py 定义的所有网络与核心函数
+***run.py 在train 与test 数据上进行小段测试
+	需要下载模型至../module/, 数据至../npz_data/ (.npz文件较大，如需运行可只下载部分.npz，但需要修改脚本中的DATA_NUM变量)
+
+***train.py 训练所用代码
+	需要下载数据至../npz_data/ (.npz文件较大，如需运行可只下载部分.npz，但需要修改脚本中的DATA_NUM变量)
+
+***test_script.py 人工合成测试集运行脚本
+	需要下载模型至../module/
+
+***test_7.py 自然环境测试集运行脚本
+	需要下载模型至../module/
+
+feat_extractor.py 自然环境分离用于识别乐器种类与位置。
+***single_task.py 简单任务测试效果。
+	需要下载single_task使用的模型（与之前的模型不同）至../module/single_task/
+
+
+
+##测试##
+
+test_script.py
+test_7.py
+
+1.test_script.py 用于进行25组测试集的测试。
+运行： python test_script.py，最终会在../separated_audio/test_25/文件夹下输出分离的音频。分离的音频也可以直接从网盘下载
+
+Line 19, ACCURACY=True时输出定位结果的正确率。ACCURACY=False时不输出正确率。
+Line 312, 输出定位结果的文件../json/sep_25.json
+
+原理：数据处理方法与训练集相似，音频数据ground truth不必计算频谱，只计算混合音频的频谱与相位即可。图片序列仍然按照每段音频三张图片送入网络。分离图片使用了openCV Laplacian算子的边缘检测方法。由于图像分割线为竖直方向，因此可以检测竖直边缘，并寻找边缘最明显的位置分割图像即可。
+
+输出结果：分离的图像作为定位结果，送入网络进行音源分离。正确率的计算是分别计算sdr1=SDR(gt_1,seg1), sdr2=SDR(gt_2,seg1),sdr3=SDR(gt_2,seg_2),sdr4=SDR(gt_1,seg_2). 当满足sdr1>sdr2 and sdr3>sdr4 并且sdr1与sdr3数值均较大时，说明分离正确，否则分离不正确。具体效果可以下载网盘音频，也可以运行test_script.py在./separated_audio/test_25/得到音频。分离正确率会直接输出。定位结果文件将输出至../json/sep_25.json.
+
+2.test_7.py 用于进行7组测试集的测试。
+运行 python test_7.py
+
+原理： 因为训练的网络可以根据图片乐器种类实现音源分离，故需判断乐器种类。使用feat_extractor.py中的densenet161识别出一段视频中的乐器种类后，再利用热度图判断不同乐器在图片中的位置（判断水平方向的位置），具体方法是找出每张图片的热度图红色通道最大值的平均位置，将多张图片综合计算后获得两种乐器的水平方向位置。获得之后将图片以两种乐器的中点为分界线切分为左右两部分。 将混合音频和两种乐器的图片送入网络，进行音源分离。
+
+输出结果：根据乐器的位置进行音源定位后，左侧的乐器应当将左侧音源分离出来，右侧乐器应当将右侧音源分离出来。具体效果可以下载网盘音频，也可以运行test_7.py在./separated_audio/test_7/得到音频。定位结果文件将输出至../json/sep_7.json. 热度图会输出至./CAM路径下。
+
